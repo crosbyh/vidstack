@@ -35,10 +35,11 @@ async function buildSite(videos, config) {
 
   // Load templates
   const templatesDir = path.join(__dirname, 'templates');
-  const [indexTpl, watchTpl, embedTpl] = await Promise.all([
+  const [indexTpl, watchTpl, embedTpl, tagsTpl] = await Promise.all([
     fs.readFile(path.join(templatesDir, 'index.html'), 'utf-8'),
     fs.readFile(path.join(templatesDir, 'watch.html'), 'utf-8'),
     fs.readFile(path.join(templatesDir, 'embed.html'), 'utf-8'),
+    fs.readFile(path.join(templatesDir, 'tags.html'), 'utf-8'),
   ]);
 
   // Copy static assets
@@ -72,8 +73,9 @@ async function buildSite(videos, config) {
 
     // Tags HTML
     let tagsHtml = '';
-    if (video.tags && video.tags.length > 0) {
-      const tagPills = video.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
+    const allTags = [...(video.tags || []), ...(video.categories || [])];
+    if (allTags.length > 0) {
+      const tagPills = allTags.map(t => `<a href="/tags.html?tag=${encodeURIComponent(t)}" class="tag">${escapeHtml(t)}</a>`).join('');
       tagsHtml = `<div class="tags">${tagPills}</div>`;
     }
 
@@ -130,6 +132,12 @@ async function buildSite(videos, config) {
   await fs.writeFile(
     path.join(outputDir, 'api', 'videos.json'),
     JSON.stringify(manifest, null, 2)
+  );
+
+  // Write tags page
+  await fs.writeFile(
+    path.join(outputDir, 'tags.html'),
+    render(tagsTpl, { siteTitle })
   );
 
   // Write index page

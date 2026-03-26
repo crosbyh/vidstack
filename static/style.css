@@ -20,12 +20,23 @@ body {
 header {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 header h1 {
   font-size: 1.25rem;
   font-weight: 600;
 }
+
+header nav a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+header nav a:hover { color: var(--text); }
 
 header .back-link {
   color: var(--text-muted);
@@ -219,6 +230,84 @@ main { padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
   border-radius: 20px;
   font-size: 0.8rem;
   border: 1px solid var(--border);
+  text-decoration: none;
+}
+
+.tag:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+/* Tags Page */
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.tag-pill {
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.tag-pill:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+
+.tag-pill--active {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+}
+
+.tag-pill--active:hover {
+  background: var(--accent);
+  color: #000;
+}
+
+.tag-count {
+  opacity: 0.6;
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+}
+
+.active-tag-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.clear-tag-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-family: inherit;
+}
+
+.clear-tag-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text);
 }
 
 /* Embed Codes */
