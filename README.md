@@ -92,7 +92,7 @@ yt-dlp --write-info-json --write-description --write-thumbnail \
 
 ## Auto-Rebuild
 
-The Docker container watches the video directory using `inotifywait`. When videos are added, removed, or moved, the site automatically rebuilds and nginx reloads — no restart needed.
+The Docker container runs a cron job every minute that rebuilds the site and reloads nginx. When you add or remove videos from the mounted folder, the changes will appear within a minute — no restart needed.
 
 ## Reverse Proxy
 
