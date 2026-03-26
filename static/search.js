@@ -14,7 +14,7 @@
   }
 
   function renderCard(video) {
-    return `<a href="/watch/${video.id}" class="card">
+    return `<a href="/watch/${video.id}.html" class="card">
       <div class="thumb">
         <img src="/thumbs/${video.id}${video.thumbExt}" alt="${escapeHtml(video.title)}" loading="lazy">
         <span class="duration">${escapeHtml(video.durationString)}</span>

@@ -61,7 +61,7 @@ async function buildSite(videos, config) {
     }
 
     const thumbExt = video._thumbExt || '.webp';
-    const iframeEmbed = escapeHtml(`<iframe src="${baseUrl}/embed/${video.id}" width="560" height="315" frameborder="0" allowfullscreen></iframe>`);
+    const iframeEmbed = escapeHtml(`<iframe src="${baseUrl}/embed/${video.id}.html" width="560" height="315" frameborder="0" allowfullscreen></iframe>`);
     const videoEmbed = escapeHtml(`<video src="${baseUrl}/videos/${video.id}.${video.videoExt}" controls width="560"></video>`);
 
     // Stats HTML
