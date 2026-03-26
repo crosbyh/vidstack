@@ -12,12 +12,14 @@
   </header>
 
   <main>
-    <h1 class="page-title">Tags</h1>
     <div id="active-tag" class="active-tag-banner" style="display:none">
       <span id="active-tag-name"></span>
       <button id="clear-tag" class="clear-tag-btn">Clear</button>
     </div>
-    <div class="tag-cloud" id="tag-cloud"></div>
+    <details class="tag-cloud-section" id="tag-cloud-section" open>
+      <summary>Tags</summary>
+      <div class="tag-cloud" id="tag-cloud"></div>
+    </details>
     <div class="video-count" id="video-count" style="display:none"></div>
     <div class="video-grid" id="video-grid"></div>
   </main>
