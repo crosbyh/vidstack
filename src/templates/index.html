@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{siteTitle}}</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <h1>{{siteTitle}}</h1>
+  </header>
+
+  <main>
+    <div class="controls">
+      <input type="search" id="search" placeholder="Search videos..." autocomplete="off">
+      <select id="channel-filter">
+        <option value="">All channels</option>
+      </select>
+      <select id="sort-by">
+        <option value="date-desc">Newest first</option>
+        <option value="date-asc">Oldest first</option>
+        <option value="duration-desc">Longest first</option>
+        <option value="duration-asc">Shortest first</option>
+        <option value="title-asc">Title A–Z</option>
+        <option value="title-desc">Title Z–A</option>
+      </select>
+    </div>
+
+    <div class="video-count" id="video-count"></div>
+    <div class="video-grid" id="video-grid"></div>
+  </main>
+
+  <script src="/search.js"></script>
+</body>
+</html>

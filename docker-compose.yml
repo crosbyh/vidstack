@@ -1,0 +1,18 @@
+services:
+  videos:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - ${VIDEO_DIR:-./videos}:/data/videos:ro
+    environment:
+      - VIDEO_DIR=/data/videos
+      - BASE_URL=${BASE_URL:-http://localhost}
+      - SITE_TITLE=${SITE_TITLE:-My Videos}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.videos.rule=Host(`${DOMAIN:-videos.localhost}`)"
+      - "traefik.http.routers.videos.entrypoints=websecure"
+      - "traefik.http.routers.videos.tls.certresolver=letsencrypt"
+      - "traefik.http.services.videos.loadbalancer.server.port=80"
+    ports:
+      - "${PORT:-8080}:80"

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{title}} — {{siteTitle}}</title>
+  <meta property="og:title" content="{{title}}">
+  <meta property="og:type" content="video.other">
+  <meta property="og:image" content="{{baseUrl}}/thumbs/{{id}}{{thumbExt}}">
+  <meta property="og:video" content="{{baseUrl}}/videos/{{id}}.{{videoExt}}">
+  <meta property="og:video:type" content="{{mimeType}}">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" class="back-link">← {{siteTitle}}</a>
+  </header>
+
+  <main class="watch-page">
+    <div class="player-container" data-video-id="{{id}}">
+      <video id="player" controls preload="metadata" poster="/thumbs/{{id}}{{thumbExt}}">
+        <source src="/videos/{{id}}.{{videoExt}}" type="{{mimeType}}">
+      </video>
+    </div>
+
+    <div class="video-info">
+      <h1>{{title}}</h1>
+      <div class="video-meta">
+        <span class="channel">{{channel}}</span>
+        <span class="date">{{uploadDate}}</span>
+        <span class="duration">{{durationString}}</span>
+        <span class="resolution">{{resolution}}</span>
+      </div>
+
+      <div class="video-stats">
+        {{statsHtml}}
+      </div>
+
+      <details class="description-section" open>
+        <summary>Description</summary>
+        <div class="description">{{descriptionHtml}}</div>
+      </details>
+
+      {{tagsHtml}}
+
+      <details class="embed-section">
+        <summary>Embed Codes</summary>
+        <div class="embed-codes">
+          <div class="embed-option">
+            <label>iframe embed</label>
+            <div class="code-block">
+              <code id="iframe-code">{{iframeEmbed}}</code>
+              <button class="copy-btn" data-target="iframe-code">Copy</button>
+            </div>
+          </div>
+          <div class="embed-option">
+            <label>Direct video tag</label>
+            <div class="code-block">
+              <code id="video-code">{{videoEmbed}}</code>
+              <button class="copy-btn" data-target="video-code">Copy</button>
+            </div>
+          </div>
+          <div class="embed-option">
+            <label>Direct link</label>
+            <div class="code-block">
+              <code id="direct-link">{{baseUrl}}/videos/{{id}}.{{videoExt}}</code>
+              <button class="copy-btn" data-target="direct-link">Copy</button>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      {{originalUrlHtml}}
+    </div>
+  </main>
+
+  <script>
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const code = document.getElementById(btn.dataset.target);
+        navigator.clipboard.writeText(code.textContent).then(() => {
+          btn.textContent = 'Copied!';
+          setTimeout(() => btn.textContent = 'Copy', 2000);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
