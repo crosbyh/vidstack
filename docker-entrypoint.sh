@@ -14,7 +14,10 @@ node build.js
 echo "Build complete."
 
 # Cron job to rebuild every minute
-echo "* * * * * cd /app && node build.js && nginx -s reload" | crontab -
+# Cron runs in a clean env, so we pass all config inline
+cat <<CRON | crontab -
+* * * * * cd /app && VIDEO_DIR="${VIDEO_DIR}" BASE_URL="${BASE_URL}" SITE_TITLE="${SITE_TITLE}" OUTPUT_DIR="${OUTPUT_DIR}" node build.js && nginx -s reload 2>&1 | logger -t vidstack
+CRON
 crond
 
 echo "Starting nginx..."
