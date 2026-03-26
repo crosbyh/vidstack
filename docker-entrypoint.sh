@@ -3,34 +3,19 @@ set -e
 
 cd /app
 
-run_build() {
-  echo "Building site..."
-  VIDEO_DIR="${VIDEO_DIR:-/data/videos}" \
-  BASE_URL="${BASE_URL:-http://localhost}" \
-  SITE_TITLE="${SITE_TITLE:-My Videos}" \
-  OUTPUT_DIR="/usr/share/nginx/html" \
-  node build.js
-  echo "Build complete."
-}
+export VIDEO_DIR="${VIDEO_DIR:-/data/videos}"
+export BASE_URL="${BASE_URL:-http://localhost}"
+export SITE_TITLE="${SITE_TITLE:-My Videos}"
+export OUTPUT_DIR="/usr/share/nginx/html"
 
 # Initial build
-run_build
+echo "Building site..."
+node build.js
+echo "Build complete."
 
-# Watch for new videos in background
-VIDEO_DIR="${VIDEO_DIR:-/data/videos}"
-if command -v inotifywait >/dev/null 2>&1; then
-  echo "Watching ${VIDEO_DIR} for changes..."
-  (
-    while inotifywait -r -e create,delete,moved_to "${VIDEO_DIR}" 2>/dev/null; do
-      echo "Change detected, rebuilding in 5s..."
-      sleep 5
-      run_build
-      nginx -s reload
-    done
-  ) &
-else
-  echo "inotifywait not found, skipping file watch."
-fi
+# Cron job to rebuild every minute
+echo "* * * * * cd /app && node build.js && nginx -s reload" | crontab -
+crond
 
 echo "Starting nginx..."
 exec nginx -g 'daemon off;'

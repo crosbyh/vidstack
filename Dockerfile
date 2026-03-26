@@ -2,7 +2,7 @@ FROM nginx:alpine
 
 LABEL org.opencontainers.image.source=https://github.com/crosbyh/vidstack
 
-RUN apk add --no-cache nodejs inotify-tools
+RUN apk add --no-cache nodejs
 
 WORKDIR /app
 COPY build.js ./
