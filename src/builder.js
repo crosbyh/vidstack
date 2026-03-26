@@ -120,7 +120,7 @@ async function buildSite(videos, config) {
       title: v.title,
       channel: v.channel,
       uploadDate: v.uploadDate,
-      addedDate: v.addedDate,
+      addedAt: v.addedAt,
       duration: v.duration,
       durationString: v.durationString,
       tags: v.tags,

@@ -72,10 +72,10 @@ async function scanVideo(folderPath, folderName) {
 
   const ext = path.extname(videoFile).toLowerCase();
 
-  // Use video file mtime as "added" date
+  // Use video file mtime as "added" timestamp
   const videoFilePath = path.join(folderPath, videoFile);
   const stat = await fs.stat(videoFilePath);
-  const addedDate = stat.mtime.toISOString().slice(0, 10);
+  const addedAt = stat.mtime.toISOString();
 
   return {
     id: videoId,
@@ -93,7 +93,7 @@ async function scanVideo(folderPath, folderName) {
     fps: info.fps || null,
     vcodec: info.vcodec || null,
     acodec: info.acodec || null,
-    addedDate,
+    addedAt,
     originalUrl: info.webpage_url || null,
     viewCount: info.view_count || null,
     likeCount: info.like_count || null,
