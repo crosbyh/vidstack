@@ -1,4 +1,4 @@
-# youtube-static-site
+# vidstack
 
 Static site generator for self-hosted yt-dlp video libraries.
 
