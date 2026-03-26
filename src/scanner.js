@@ -72,6 +72,11 @@ async function scanVideo(folderPath, folderName) {
 
   const ext = path.extname(videoFile).toLowerCase();
 
+  // Use video file mtime as "added" date
+  const videoFilePath = path.join(folderPath, videoFile);
+  const stat = await fs.stat(videoFilePath);
+  const addedDate = stat.mtime.toISOString().slice(0, 10);
+
   return {
     id: videoId,
     title: info.title || folderName.replace(/\s*\[[^\]]+\]$/, ''),
@@ -88,11 +93,12 @@ async function scanVideo(folderPath, folderName) {
     fps: info.fps || null,
     vcodec: info.vcodec || null,
     acodec: info.acodec || null,
+    addedDate,
     originalUrl: info.webpage_url || null,
     viewCount: info.view_count || null,
     likeCount: info.like_count || null,
     // Absolute paths for symlink creation
-    _videoFilePath: path.join(folderPath, videoFile),
+    _videoFilePath: videoFilePath,
     _thumbFilePath: thumbFile ? path.join(folderPath, thumbFile) : null,
     _thumbExt: thumbFile ? path.extname(thumbFile) : null,
   };

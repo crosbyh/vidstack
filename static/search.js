@@ -42,6 +42,8 @@
   function sortVideos(videos, key) {
     const sorted = [...videos];
     switch (key) {
+      case 'added-desc': return sorted.sort((a, b) => (b.addedDate || '').localeCompare(a.addedDate || ''));
+      case 'added-asc': return sorted.sort((a, b) => (a.addedDate || '').localeCompare(b.addedDate || ''));
       case 'date-desc': return sorted.sort((a, b) => (b.uploadDate || '').localeCompare(a.uploadDate || ''));
       case 'date-asc': return sorted.sort((a, b) => (a.uploadDate || '').localeCompare(b.uploadDate || ''));
       case 'duration-desc': return sorted.sort((a, b) => b.duration - a.duration);
@@ -68,7 +70,7 @@
     const params = new URLSearchParams();
     if (query) params.set('q', query);
     if (channel) params.set('channel', channel);
-    if (sort !== 'date-desc') params.set('sort', sort);
+    if (sort !== 'added-desc') params.set('sort', sort);
     const qs = params.toString();
     history.replaceState(null, '', qs ? `?${qs}` : '/');
   }
