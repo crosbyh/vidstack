@@ -33,16 +33,13 @@ function descriptionToHtml(text) {
     .replace(/\r?\n/g, '<br>\n');
 }
 
-// Inline player Miniflux will render: <video>/<source> are on its sanitizer
-// allowlist (and it injects `controls`); a self-hosted <iframe> would be stripped.
-function playerHtml(video, { videoUrl, thumbUrl, link }) {
-  const type = escapeXml(video.mimeType || 'video/mp4');
-  const player =
-    `<p><video poster="${escapeXml(thumbUrl)}" width="640" preload="none">` +
-    `<source src="${escapeXml(videoUrl)}" type="${type}"></video></p>` +
-    `<p><a href="${escapeXml(link)}">Watch on site →</a></p>`;
+// Body HTML for content:encoded. We deliberately do NOT embed a <video> here:
+// Miniflux already renders a player from the <enclosure>, and a second inline
+// <video> produces a duplicate player. Just provide a watch link + description.
+function bodyHtml(video, { link }) {
+  const watchLink = `<p><a href="${escapeXml(link)}">Watch on site →</a></p>`;
   const desc = video.description ? `<p>${descriptionToHtml(video.description)}</p>` : '';
-  return player + desc;
+  return watchLink + desc;
 }
 
 function buildFeed(videos, config) {
@@ -84,8 +81,8 @@ function buildFeed(videos, config) {
     lines.push('      </media:content>');
     lines.push(`      <media:thumbnail url="${escapeXml(thumbUrl)}" />`);
     if (categories) lines.push(categories);
-    // Inline HTML player + description for readers like Miniflux.
-    lines.push(`      <content:encoded>${cdata(playerHtml(video, { videoUrl, thumbUrl, link }))}</content:encoded>`);
+    // Watch link + description; the player itself comes from <enclosure>.
+    lines.push(`      <content:encoded>${cdata(bodyHtml(video, { link }))}</content:encoded>`);
     lines.push('    </item>');
     return lines.join('\n');
   }).join('\n');

@@ -27,12 +27,14 @@ Static site generator for self-hosted yt-dlp video libraries.
 - Index page loads `api/videos.json` for client-side search/filter
 - Embed pages are self-contained (inline styles, no external deps)
 - `feed.xml` lists videos newest-added first; uses `BASE_URL` for absolute links
-- Feed items carry a `content:encoded` inline `<video>` player (no iframe — RSS
-  readers like Miniflux strip self-hosted iframes but allow `<video>`/`<source>`)
-  - Known limitation: the inline player only plays browser-decodable formats
+- Feed playback comes from the `<enclosure>` (readers like Miniflux render a
+  native player from it). `content:encoded` holds only a watch link + description
+  — do NOT also embed a `<video>` there, or Miniflux shows two players. Iframes
+  are useless here: Miniflux strips self-hosted iframes (fixed host allowlist).
+  - Known limitation: the enclosure player only plays browser-decodable formats
     (`.mp4` H.264/AAC, `.webm`). Non-playable scans (`.mkv`/`.avi`/`.mov`/`.flv`)
-    render a dead player. Possible revisit: gate the `<video>` to playable
-    extensions and fall back to thumbnail + link for the rest.
+    render a dead player. Possible revisit: gate the player to playable formats
+    and fall back to thumbnail + link for the rest.
 
 ## Environment Variables
 
