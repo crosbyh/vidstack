@@ -14,6 +14,7 @@ Static site generator for self-hosted yt-dlp video libraries.
 - `build.js` — Entry point, reads env config
 - `src/scanner.js` — Scans video directories, parses .info.json metadata
 - `src/builder.js` — Generates HTML pages, videos.json manifest, symlinks
+- `src/feed.js` — Generates RSS 2.0 + Media RSS feed (`dist/feed.xml`)
 - `src/templates/` — HTML templates (index, watch, embed)
 - `static/` — CSS and client-side JS (search/filter)
 - `dist/` — Generated output (gitignored)
@@ -25,6 +26,13 @@ Static site generator for self-hosted yt-dlp video libraries.
 - Videos/thumbnails served via symlinks in `dist/` pointing to mounted volume
 - Index page loads `api/videos.json` for client-side search/filter
 - Embed pages are self-contained (inline styles, no external deps)
+- `feed.xml` lists videos newest-added first; uses `BASE_URL` for absolute links
+- Feed items carry a `content:encoded` inline `<video>` player (no iframe — RSS
+  readers like Miniflux strip self-hosted iframes but allow `<video>`/`<source>`)
+  - Known limitation: the inline player only plays browser-decodable formats
+    (`.mp4` H.264/AAC, `.webm`). Non-playable scans (`.mkv`/`.avi`/`.mov`/`.flv`)
+    render a dead player. Possible revisit: gate the `<video>` to playable
+    extensions and fall back to thumbnail + link for the rest.
 
 ## Environment Variables
 

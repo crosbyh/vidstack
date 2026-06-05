@@ -1,5 +1,6 @@
 const fs = require('fs/promises');
 const path = require('path');
+const { buildFeed } = require('./feed');
 
 function escapeHtml(str) {
   if (!str) return '';
@@ -133,6 +134,12 @@ async function buildSite(videos, config) {
   await fs.writeFile(
     path.join(outputDir, 'api', 'videos.json'),
     JSON.stringify(manifest, null, 2)
+  );
+
+  // Write RSS feed
+  await fs.writeFile(
+    path.join(outputDir, 'feed.xml'),
+    buildFeed(videos, config)
   );
 
   // Write tags page
