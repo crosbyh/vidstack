@@ -1,6 +1,7 @@
 const fs = require('fs/promises');
 const path = require('path');
 const { buildFeed } = require('./feed');
+const { invidiousWatchUrl } = require('./invidious');
 
 function escapeHtml(str) {
   if (!str) return '';
@@ -23,7 +24,7 @@ async function ensureDir(dir) {
 }
 
 async function buildSite(videos, config) {
-  const { outputDir, baseUrl, siteTitle } = config;
+  const { outputDir, baseUrl, siteTitle, invidiousUrl } = config;
 
   // Create directories
   await Promise.all([
@@ -80,10 +81,17 @@ async function buildSite(videos, config) {
       tagsHtml = `<div class="tags">${tagPills}</div>`;
     }
 
-    // Original URL HTML
+    // External link HTML
     let originalUrlHtml = '';
     if (video.originalUrl) {
       originalUrlHtml = `<div class="original-link"><a href="${escapeHtml(video.originalUrl)}" target="_blank" rel="noopener">View on YouTube →</a></div>`;
+    }
+
+    // "Watch on Invidious" link (only for YouTube videos, when configured)
+    let invidiousUrlHtml = '';
+    const invUrl = invidiousWatchUrl(video, invidiousUrl);
+    if (invUrl) {
+      invidiousUrlHtml = `<div class="original-link"><a href="${escapeHtml(invUrl)}" target="_blank" rel="noopener">Watch on Invidious →</a></div>`;
     }
 
     const vars = {
@@ -97,6 +105,7 @@ async function buildSite(videos, config) {
       statsHtml,
       tagsHtml,
       originalUrlHtml,
+      invidiousUrlHtml,
     };
 
     // Write watch page

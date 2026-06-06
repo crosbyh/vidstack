@@ -6,6 +6,7 @@ const config = {
   outputDir: process.env.OUTPUT_DIR || './dist',
   baseUrl: (process.env.BASE_URL || 'http://localhost').replace(/\/$/, ''),
   siteTitle: process.env.SITE_TITLE || 'My Videos',
+  invidiousUrl: (process.env.INVIDIOUS_URL || '').replace(/\/$/, ''),
 };
 
 async function main() {

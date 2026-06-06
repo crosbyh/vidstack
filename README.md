@@ -78,6 +78,7 @@ yt-dlp --write-info-json --write-description --write-thumbnail \
 | `VIDEO_DIR` | `./videos` | Path to yt-dlp video folders |
 | `BASE_URL` | `http://localhost` | Public URL used in embed codes |
 | `SITE_TITLE` | `My Videos` | Displayed in the site header |
+| `INVIDIOUS_URL` | _(unset)_ | Invidious instance (e.g. `https://yewtu.be`). When set, YouTube videos get a "Watch on Invidious" link in the watch page and RSS items |
 | `PORT` | `8080` | Host port (Docker Compose) |
 
 ## Pages

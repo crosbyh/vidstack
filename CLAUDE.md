@@ -42,6 +42,10 @@ Static site generator for self-hosted yt-dlp video libraries.
 - `BASE_URL` — Public URL for embed codes (default: `http://localhost`)
 - `SITE_TITLE` — Site title (default: `My Videos`)
 - `OUTPUT_DIR` — Build output directory (default: `./dist`)
+- `INVIDIOUS_URL` — Invidious instance URL (e.g. `https://yewtu.be`); when set,
+  YouTube videos get a "Watch on Invidious" link in the watch page and RSS items.
+  Empty/unset disables the link. Only emitted for YouTube-sourced videos
+  (detected from `webpage_url`); see `src/invidious.js`.
 
 ## Commands
 

@@ -2,6 +2,8 @@
 // Items are ordered by when each video was added to the library (newest first),
 // so subscribers see freshly-downloaded videos at the top.
 
+const { invidiousWatchUrl } = require('./invidious');
+
 function escapeXml(str) {
   if (!str) return '';
   return String(str)
@@ -35,15 +37,19 @@ function descriptionToHtml(text) {
 
 // Body HTML for content:encoded. We deliberately do NOT embed a <video> here:
 // Miniflux already renders a player from the <enclosure>, and a second inline
-// <video> produces a duplicate player. Just provide a watch link + description.
-function bodyHtml(video, { link }) {
-  const watchLink = `<p><a href="${escapeXml(link)}">Watch on site →</a></p>`;
+// <video> produces a duplicate player. Just provide watch links + description.
+function bodyHtml(video, { link, invidiousLink }) {
+  const links = [`<a href="${escapeXml(link)}">Watch on site →</a>`];
+  if (invidiousLink) {
+    links.push(`<a href="${escapeXml(invidiousLink)}">Watch on Invidious →</a>`);
+  }
+  const linksHtml = `<p>${links.join(' &nbsp;|&nbsp; ')}</p>`;
   const desc = video.description ? `<p>${descriptionToHtml(video.description)}</p>` : '';
-  return watchLink + desc;
+  return linksHtml + desc;
 }
 
 function buildFeed(videos, config) {
-  const { baseUrl, siteTitle } = config;
+  const { baseUrl, siteTitle, invidiousUrl } = config;
 
   // Newest additions first; fall back to upload date when addedAt is missing.
   const items = [...videos].sort((a, b) =>
@@ -81,8 +87,9 @@ function buildFeed(videos, config) {
     lines.push('      </media:content>');
     lines.push(`      <media:thumbnail url="${escapeXml(thumbUrl)}" />`);
     if (categories) lines.push(categories);
-    // Watch link + description; the player itself comes from <enclosure>.
-    lines.push(`      <content:encoded>${cdata(bodyHtml(video, { link }))}</content:encoded>`);
+    // Watch links + description; the player itself comes from <enclosure>.
+    const invidiousLink = invidiousWatchUrl(video, invidiousUrl);
+    lines.push(`      <content:encoded>${cdata(bodyHtml(video, { link, invidiousLink }))}</content:encoded>`);
     lines.push('    </item>');
     return lines.join('\n');
   }).join('\n');
