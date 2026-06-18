@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>{{siteTitle}}</title>
   <link rel="stylesheet" href="/style.css">
-  <link rel="alternate" type="application/rss+xml" title="{{siteTitle}} RSS feed" href="/feed.xml">
+  <link rel="alternate" type="application/rss+xml" title="{{siteTitle}} RSS feed" href="{{feedUrl}}">
 </head>
 <body>
   <header>
-    <h1>{{siteTitle}}</h1>
-    <nav><a href="/tags.html" class="nav-link">Tags</a><a href="/feed.xml" class="nav-link">RSS</a></nav>
+    <nav class="tabs">{{tabsHtml}}</nav>
+    <nav><a href="/tags.html" class="nav-link">Tags</a><a href="{{feedUrl}}" class="nav-link">RSS</a></nav>
   </header>
 
   <main>
@@ -35,6 +35,7 @@
     <div class="video-grid" id="video-grid"></div>
   </main>
 
+  <script>window.VIDSTACK_MANIFEST = "{{manifestUrl}}";</script>
   <script src="/search.js"></script>
 </body>
 </html>

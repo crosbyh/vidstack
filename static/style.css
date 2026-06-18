@@ -46,6 +46,19 @@ header h1 {
   background: var(--bg-hover);
 }
 
+/* Library tabs (reuse .nav-link styling) */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.nav-link--active {
+  color: var(--text);
+  background: var(--bg-hover);
+  border-color: var(--accent);
+}
+
 header .back-link {
   color: var(--text-muted);
   text-decoration: none;

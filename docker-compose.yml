@@ -4,10 +4,19 @@ services:
     restart: unless-stopped
     volumes:
       - ${VIDEO_DIR:-./videos}:/data/videos:ro
+      # Add more libraries by mounting them and listing them in LIBRARIES below, e.g.:
+      # - ${CHANNELS_DIR:-./channels}:/data/channels:ro
     environment:
       - VIDEO_DIR=/data/videos
       - BASE_URL=${BASE_URL:-http://localhost}
       - SITE_TITLE=${SITE_TITLE:-My Videos}
       - INVIDIOUS_URL=${INVIDIOUS_URL:-}
+      # Multi-library: a JSON array of { name, path, layout } (layout: flat | tvshow).
+      # When unset, a single flat library is built from VIDEO_DIR/SITE_TITLE.
+      # The first entry is the default library (served at the site root, /feed.xml).
+      # Example (Watch Later + a Jellyfin/ytdl-sub "Channels" tree):
+      # - |
+      #   LIBRARIES=[{"name":"Watch Later","path":"/data/videos","layout":"flat"},{"name":"Channels","path":"/data/channels","layout":"tvshow"}]
+      - LIBRARIES=${LIBRARIES:-}
     ports:
       - "${PORT:-8080}:80"

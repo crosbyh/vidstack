@@ -1,36 +1,14 @@
 const fs = require('fs/promises');
 const path = require('path');
-
-const VIDEO_EXTENSIONS = ['.webm', '.mp4', '.mkv', '.mov', '.avi', '.flv'];
-const MIME_TYPES = {
-  '.webm': 'video/webm',
-  '.mp4': 'video/mp4',
-  '.mkv': 'video/x-matroska',
-  '.mov': 'video/quicktime',
-  '.avi': 'video/x-msvideo',
-  '.flv': 'video/x-flv',
-};
+const { VIDEO_EXTENSIONS, MIME_TYPES, formatDate, formatDuration } = require('./scan-utils');
+const { scanTvshow } = require('./scanner-tvshow');
 
 function extractVideoId(folderName) {
   const match = folderName.match(/\[([^\]]+)\]$/);
   return match ? match[1] : null;
 }
 
-function formatDate(yyyymmdd) {
-  if (!yyyymmdd || yyyymmdd.length !== 8) return null;
-  return `${yyyymmdd.slice(0, 4)}-${yyyymmdd.slice(4, 6)}-${yyyymmdd.slice(6, 8)}`;
-}
-
-function formatDuration(seconds) {
-  if (!seconds) return '0:00';
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-  return `${m}:${String(s).padStart(2, '0')}`;
-}
-
-async function scanVideo(folderPath, folderName) {
+async function scanVideo(folderPath, folderName, library) {
   const videoId = extractVideoId(folderName);
   if (!videoId) return null;
 
@@ -79,6 +57,7 @@ async function scanVideo(folderPath, folderName) {
 
   return {
     id: videoId,
+    library: library.slug,
     title: info.title || folderName.replace(/\s*\[[^\]]+\]$/, ''),
     uploadDate: formatDate(info.upload_date) || null,
     duration: info.duration || 0,
@@ -101,18 +80,20 @@ async function scanVideo(folderPath, folderName) {
     _videoFilePath: videoFilePath,
     _thumbFilePath: thumbFile ? path.join(folderPath, thumbFile) : null,
     _thumbExt: thumbFile ? path.extname(thumbFile) : null,
+    _subtitlePath: null,
   };
 }
 
-async function scanVideos(videoDir) {
-  const resolvedDir = path.resolve(videoDir);
+// "flat" layout: one Title [videoId]/ folder per video with a .info.json.
+async function scanFlat(library) {
+  const resolvedDir = path.resolve(library.path);
   const entries = await fs.readdir(resolvedDir, { withFileTypes: true });
   const videos = [];
 
   for (const entry of entries) {
     if (!entry.isDirectory()) continue;
     const folderPath = path.join(resolvedDir, entry.name);
-    const video = await scanVideo(folderPath, entry.name);
+    const video = await scanVideo(folderPath, entry.name, library);
     if (video) videos.push(video);
   }
 
@@ -121,4 +102,15 @@ async function scanVideos(videoDir) {
   return videos;
 }
 
-module.exports = { scanVideos };
+// Dispatch to the adapter for a library's layout.
+async function scanLibrary(library) {
+  if (library.layout === 'tvshow') return scanTvshow(library);
+  return scanFlat(library);
+}
+
+// Back-compat alias for the original single-folder entry point.
+async function scanVideos(videoDir) {
+  return scanFlat({ slug: 'library', path: videoDir, layout: 'flat' });
+}
+
+module.exports = { scanLibrary, scanVideos };

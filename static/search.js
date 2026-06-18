@@ -72,7 +72,7 @@
     if (channel) params.set('channel', channel);
     if (sort !== 'added-desc') params.set('sort', sort);
     const qs = params.toString();
-    history.replaceState(null, '', qs ? `?${qs}` : '/');
+    history.replaceState(null, '', qs ? `?${qs}` : location.pathname);
   }
 
   function populateChannels() {
@@ -94,7 +94,7 @@
 
   async function init() {
     try {
-      const res = await fetch('/api/videos.json');
+      const res = await fetch(window.VIDSTACK_MANIFEST || '/api/videos.json');
       const data = await res.json();
       allVideos = data.videos;
     } catch (e) {

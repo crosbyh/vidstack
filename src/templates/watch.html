@@ -13,13 +13,14 @@
 </head>
 <body>
   <header>
-    <a href="/" class="back-link">← {{siteTitle}}</a>
+    <a href="{{libraryHref}}" class="back-link">← {{siteTitle}}</a>
   </header>
 
   <main class="watch-page">
     <div class="player-container" data-video-id="{{id}}">
       <video id="player" controls preload="metadata" poster="/thumbs/{{id}}{{thumbExt}}">
         <source src="/videos/{{id}}.{{videoExt}}" type="{{mimeType}}">
+        {{trackHtml}}
       </video>
     </div>
 

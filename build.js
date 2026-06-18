@@ -1,20 +1,27 @@
-const { scanVideos } = require('./src/scanner');
+const { scanLibrary } = require('./src/scanner');
 const { buildSite } = require('./src/builder');
+const { parseLibraries } = require('./src/config');
+
+const libraries = parseLibraries();
 
 const config = {
-  videoDir: process.env.VIDEO_DIR || './videos',
   outputDir: process.env.OUTPUT_DIR || './dist',
   baseUrl: (process.env.BASE_URL || 'http://localhost').replace(/\/$/, ''),
   siteTitle: process.env.SITE_TITLE || 'My Videos',
   invidiousUrl: (process.env.INVIDIOUS_URL || '').replace(/\/$/, ''),
+  libraries,
 };
 
 async function main() {
-  console.log(`Scanning videos in: ${config.videoDir}`);
-  const videos = await scanVideos(config.videoDir);
-  console.log(`Found ${videos.length} videos`);
+  const scanned = [];
+  for (const library of libraries) {
+    console.log(`Scanning "${library.name}" (${library.layout}) in: ${library.path}`);
+    const videos = await scanLibrary(library);
+    console.log(`  Found ${videos.length} videos`);
+    scanned.push({ library, videos });
+  }
 
-  await buildSite(videos, config);
+  await buildSite(scanned, config);
   console.log(`Site built to: ${config.outputDir}`);
 }
 

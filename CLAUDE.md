@@ -11,17 +11,33 @@ Static site generator for self-hosted yt-dlp video libraries.
 
 ## Project Structure
 
-- `build.js` — Entry point, reads env config
-- `src/scanner.js` — Scans video directories, parses .info.json metadata
-- `src/builder.js` — Generates HTML pages, videos.json manifest, symlinks
-- `src/feed.js` — Generates RSS 2.0 + Media RSS feed (`dist/feed.xml`)
-- `src/templates/` — HTML templates (index, watch, embed)
+- `build.js` — Entry point, reads env config, scans each library, builds once
+- `src/config.js` — Parses the `LIBRARIES` env (or falls back to `VIDEO_DIR`) into normalized library objects
+- `src/scanner.js` — `scanLibrary(library)` dispatch; `flat` adapter (Title [videoId]/ + .info.json)
+- `src/scanner-tvshow.js` — `tvshow` adapter (Channel/Season/episode + XML `.nfo`); includes `parseNfo`
+- `src/scan-utils.js` — Shared scan helpers (MIME types, extensions, date/duration formatting)
+- `src/srt2vtt.js` — Minimal SubRip → WebVTT converter for subtitle `<track>`s
+- `src/builder.js` — Generates HTML pages, per-library videos.json manifest + feed, tabs, symlinks
+- `src/feed.js` — Generates RSS 2.0 + Media RSS feed (per library)
+- `src/templates/` — HTML templates (index, watch, embed, tags)
 - `static/` — CSS and client-side JS (search/filter)
 - `dist/` — Generated output (gitignored)
 
 ## Key Patterns
 
-- Video ID extracted from folder name: `Title [videoId]` via regex `/\[([^\]]+)\]$/`
+- **Libraries:** `LIBRARIES` env (JSON `[{name,path,layout}]`, `layout` ∈ `flat`|`tvshow`)
+  defines tabs. First library is the default — served at root (`/`, `/feed.xml`,
+  `/api/videos.json`); others are namespaced (`/<slug>/`, `/<slug>.xml`,
+  `/<slug>/api/videos.json`). Unset → single flat library from `VIDEO_DIR`/`SITE_TITLE`
+  (byte-stable with the original behaviour). See `src/config.js`.
+- **Shared media namespace:** `watch/ embed/ videos/ thumbs/ subs/` are flat and shared
+  across libraries, keyed by the (globally-unique) YouTube id — only manifests, feeds,
+  and index pages are per-library. Adapters emit the SAME per-video object shape plus a
+  `library` (slug) field and internal `_subtitlePath`.
+- **tvshow layout:** ID/metadata come from the sibling XML `.nfo` (`<uniqueid type="youtube">`,
+  `<showtitle>`=channel, `<plot>`=description, `<aired>`=date). No duration in `.nfo` → cards
+  show `0:00`. `originalUrl` is synthesized from the YouTube id so Invidious links work.
+- Video ID extracted from folder name: `Title [videoId]` via regex `/\[([^\]]+)\]$/` (flat layout)
 - Templates use `{{placeholder}}` syntax, rendered with simple string replace
 - Videos/thumbnails served via symlinks in `dist/` pointing to mounted volume
 - Index page loads `api/videos.json` for client-side search/filter
@@ -38,7 +54,11 @@ Static site generator for self-hosted yt-dlp video libraries.
 
 ## Environment Variables
 
-- `VIDEO_DIR` — Path to yt-dlp video folders (default: `./videos`)
+- `LIBRARIES` — JSON array of `{name, path, layout}` libraries (`layout`: `flat` |
+  `tvshow`). First entry is the default/root library; others get tabs + namespaced
+  output. When unset, falls back to a single flat library from `VIDEO_DIR`/`SITE_TITLE`.
+- `VIDEO_DIR` — Path to yt-dlp video folders (default: `./videos`); used only when
+  `LIBRARIES` is unset
 - `BASE_URL` — Public URL for embed codes (default: `http://localhost`)
 - `SITE_TITLE` — Site title (default: `My Videos`)
 - `OUTPUT_DIR` — Build output directory (default: `./dist`)

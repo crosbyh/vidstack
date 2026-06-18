@@ -50,6 +50,7 @@ function bodyHtml(video, { link, invidiousLink }) {
 
 function buildFeed(videos, config) {
   const { baseUrl, siteTitle, invidiousUrl } = config;
+  const feedFile = config.feedFile || 'feed.xml';
 
   // Newest additions first; fall back to upload date when addedAt is missing.
   const items = [...videos].sort((a, b) =>
@@ -99,7 +100,7 @@ function buildFeed(videos, config) {
   <channel>
     <title>${escapeXml(siteTitle)}</title>
     <link>${escapeXml(baseUrl)}</link>
-    <atom:link href="${escapeXml(`${baseUrl}/feed.xml`)}" rel="self" type="application/rss+xml" />
+    <atom:link href="${escapeXml(`${baseUrl}/${feedFile}`)}" rel="self" type="application/rss+xml" />
     <description>${escapeXml(`Latest videos from ${siteTitle}`)}</description>
     <language>en</language>
     <lastBuildDate>${lastBuildDate}</lastBuildDate>

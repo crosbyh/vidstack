@@ -2,6 +2,7 @@ const fs = require('fs/promises');
 const path = require('path');
 const { buildFeed } = require('./feed');
 const { invidiousWatchUrl } = require('./invidious');
+const { srtToVtt } = require('./srt2vtt');
 
 function escapeHtml(str) {
   if (!str) return '';
@@ -23,17 +24,28 @@ async function ensureDir(dir) {
   await fs.mkdir(dir, { recursive: true });
 }
 
-async function buildSite(videos, config) {
-  const { outputDir, baseUrl, siteTitle, invidiousUrl } = config;
+async function buildSite(scanned, config) {
+  const { outputDir, baseUrl, siteTitle, invidiousUrl, libraries } = config;
+  const libBySlug = Object.fromEntries(libraries.map(l => [l.slug, l]));
 
-  // Create directories
+  // Render the library tab bar; activeSlug highlights the current library.
+  function buildTabs(activeSlug) {
+    return libraries.map(l => {
+      const active = l.slug === activeSlug ? ' nav-link--active' : '';
+      return `<a href="${l.href}" class="nav-link${active}">${escapeHtml(l.name)}</a>`;
+    }).join('');
+  }
+
+  // Shared, id-keyed output (media + per-video pages) lives at the site root so
+  // libraries never collide and the default library keeps its legacy URLs.
   await Promise.all([
     ensureDir(path.join(outputDir, 'watch')),
     ensureDir(path.join(outputDir, 'embed')),
-    ensureDir(path.join(outputDir, 'api')),
     ensureDir(path.join(outputDir, 'thumbs')),
     ensureDir(path.join(outputDir, 'videos')),
+    ensureDir(path.join(outputDir, 'subs')),
   ]);
+  await Promise.all(libraries.map(l => ensureDir(path.join(outputDir, l.indexPath, 'api'))));
 
   // Load templates
   const templatesDir = path.join(__dirname, 'templates');
@@ -51,8 +63,11 @@ async function buildSite(videos, config) {
     staticFiles.map(f => fs.copyFile(path.join(staticDir, f), path.join(outputDir, f)))
   );
 
-  // Process each video
-  for (const video of videos) {
+  // Process every video (shared media + watch/embed pages, keyed by id).
+  const allVideos = scanned.flatMap(s => s.videos);
+  for (const video of allVideos) {
+    const lib = libBySlug[video.library];
+
     // Symlink video file
     const videoLink = path.join(outputDir, 'videos', `${video.id}.${video.videoExt}`);
     await symlink(video._videoFilePath, videoLink);
@@ -61,6 +76,18 @@ async function buildSite(videos, config) {
     if (video._thumbFilePath) {
       const thumbLink = path.join(outputDir, 'thumbs', `${video.id}${video._thumbExt}`);
       await symlink(video._thumbFilePath, thumbLink);
+    }
+
+    // Subtitles: convert .srt -> .vtt and expose a <track> (browsers need VTT).
+    let trackHtml = '';
+    if (video._subtitlePath) {
+      try {
+        const vtt = srtToVtt(await fs.readFile(video._subtitlePath, 'utf-8'));
+        await fs.writeFile(path.join(outputDir, 'subs', `${video.id}.vtt`), vtt);
+        trackHtml = `<track kind="subtitles" srclang="en" label="English" src="/subs/${video.id}.vtt" default>`;
+      } catch (e) {
+        console.warn(`Failed to convert subtitles for ${video.id}:`, e.message);
+      }
     }
 
     const thumbExt = video._thumbExt || '.webp';
@@ -97,8 +124,11 @@ async function buildSite(videos, config) {
     const vars = {
       ...video,
       thumbExt,
-      siteTitle,
+      siteTitle: lib ? lib.name : siteTitle,
       baseUrl,
+      tabsHtml: buildTabs(video.library),
+      libraryHref: lib ? lib.href : '/',
+      trackHtml,
       descriptionHtml: linkifyText(video.description),
       iframeEmbed,
       videoEmbed,
@@ -121,46 +151,52 @@ async function buildSite(videos, config) {
     );
   }
 
-  // Write videos.json (exclude descriptions and internal paths)
-  const manifest = {
-    siteTitle,
-    generatedAt: new Date().toISOString(),
-    videos: videos.map(v => ({
-      id: v.id,
-      title: v.title,
-      channel: v.channel,
-      uploadDate: v.uploadDate,
-      addedAt: v.addedAt,
-      duration: v.duration,
-      durationString: v.durationString,
-      tags: v.tags,
-      categories: v.categories,
-      resolution: v.resolution,
-      videoExt: v.videoExt,
-      thumbExt: v._thumbExt || '.webp',
-    })),
-  };
-  await fs.writeFile(
-    path.join(outputDir, 'api', 'videos.json'),
-    JSON.stringify(manifest, null, 2)
-  );
+  // Per-library manifest, feed, and index page.
+  for (const { library, videos } of scanned) {
+    const manifest = {
+      siteTitle: library.name,
+      library: library.slug,
+      generatedAt: new Date().toISOString(),
+      videos: videos.map(v => ({
+        id: v.id,
+        title: v.title,
+        channel: v.channel,
+        uploadDate: v.uploadDate,
+        addedAt: v.addedAt,
+        duration: v.duration,
+        durationString: v.durationString,
+        tags: v.tags,
+        categories: v.categories,
+        resolution: v.resolution,
+        videoExt: v.videoExt,
+        thumbExt: v._thumbExt || '.webp',
+      })),
+    };
+    await fs.writeFile(
+      path.join(outputDir, library.indexPath, 'api', 'videos.json'),
+      JSON.stringify(manifest, null, 2)
+    );
 
-  // Write RSS feed
-  await fs.writeFile(
-    path.join(outputDir, 'feed.xml'),
-    buildFeed(videos, config)
-  );
+    await fs.writeFile(
+      path.join(outputDir, library.feedFile),
+      buildFeed(videos, { ...config, siteTitle: library.name, feedFile: library.feedFile })
+    );
 
-  // Write tags page
+    await fs.writeFile(
+      path.join(outputDir, library.indexPath, 'index.html'),
+      render(indexTpl, {
+        siteTitle: library.name,
+        tabsHtml: buildTabs(library.slug),
+        manifestUrl: library.manifestUrl,
+        feedUrl: library.feedUrl,
+      })
+    );
+  }
+
+  // Tags page (single, driven by the default library's manifest).
   await fs.writeFile(
     path.join(outputDir, 'tags.html'),
-    render(tagsTpl, { siteTitle })
-  );
-
-  // Write index page
-  await fs.writeFile(
-    path.join(outputDir, 'index.html'),
-    render(indexTpl, { siteTitle })
+    render(tagsTpl, { siteTitle, tabsHtml: buildTabs(null) })
   );
 }
 
