@@ -30,6 +30,13 @@ header h1 {
   font-weight: 600;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 .nav-link {
   color: var(--text-muted);
   text-decoration: none;
