@@ -185,7 +185,8 @@ async function buildSite(scanned, config) {
     await fs.writeFile(
       path.join(outputDir, library.indexPath, 'index.html'),
       render(indexTpl, {
-        siteTitle: library.name,
+        // Fixed site-wide heading (SITE_TITLE); per-library names live in the tabs.
+        siteTitle,
         tabsHtml: buildTabs(library.slug),
         manifestUrl: library.manifestUrl,
         feedUrl: library.feedUrl,
